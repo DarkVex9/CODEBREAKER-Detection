@@ -1,0 +1,18 @@
+.box {
+  background-color: #EEEEEE;
+  border: 1px solid black;
+  border-radius: 15px;
+  display:inline-block;
+  margin:5px;
+  padding:10px
+}
+
+.codeBlock {
+  background-color: #CCCCCC;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  font-family: serif;
+  display:inline-block;
+  margin:0px 5px;
+  padding:5px
+}
