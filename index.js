@@ -26,16 +26,20 @@ init();
 // createResult("testFile.txt", testResult);
 
 function init(){
-	if(isEnvLoaded){
-		console.log("Env file loaded");
-	}else{
+	try{
+		if(isEnvLoaded){console.log("Env file loaded")}
+	}
+	catch(e){
 		console.log("Couldn't find 'env.js' file.");
 	}
 
-	if(isPromptLoaded){
-		console.log("Prompt file loaded");
-		initializePromptFields();
-	}else{
+	try{
+		if(isPromptLoaded){
+			console.log("Prompt file loaded");
+			initializePromptFields();
+		}
+	}
+	catch(e){
 		console.log("Couldn't find 'prompt.js' file.");
 	}
 
@@ -86,14 +90,15 @@ async function scan(){
 	}
 	errorLabel.style.display = "none";
 	let errorText = "";
-	if(!isEnvLoaded){
-		errorText += "Scan aborted due to missing environment variable file ('env.js')\n";
+	try{isEnvLoaded;}
+	catch(e){
+		errorText += " - Scan aborted due to missing environment variable file ('env.js')\n";
 	}
 	if(rawFile.length < 6){
-		errorText += "Scan aborted due to missing or empty code file.\n";
+		errorText += " - Scan aborted due to missing or empty code file.\n";
 	}
 	if(promptField.value.length < 6){
-		errorText += "Scan aborted due to missing main prompt.\n";
+		errorText += " - Scan aborted due to missing main prompt.\n";
 	}
 	if(errorText.length > 0){
 		errorLabel.style.display = "block";
@@ -151,7 +156,7 @@ async function ai_call(prompt){
 						type: "STRING"
 					}
 				},
-				required: ["classification"]
+				required: ["classification","explanation"]
 			}
 		}
 	}
@@ -213,7 +218,7 @@ function createResult(fileName, resultString){
 	explanation.appendChild(document.createTextNode(result.explanation));
 	div.appendChild(explanation);
 
-	if(result.indicators.length > 0){
+	if(result.hasOwnProperty("indicators") && result.indicators.length > 0){
 		let indicatorLabel = document.createElement("p");
 		let boldLabel = document.createElement("b");
 		indicatorLabel.appendChild(boldLabel);
