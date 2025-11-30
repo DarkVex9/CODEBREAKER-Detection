@@ -1,27 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>CODEBREAKER Detection</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <h1>CODEBREAKER Detection</h1>
-    <h2>Input</h2>
-    <div class="box">
-      <label for="file">Choose file to upload:</label>
-      <br>
-      <input type="file" id="file" name="file" multiple />
-    </div>
-    <br>
-    <button id="startButton">Start</button>
-    <br>
-    <hr>
-    <h2>Results</h2>
-    <div id="results">
-    </div>
-    <script src="index.js"></script>
-  </body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>CODEBREAKER Detection</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<h1>CODEBREAKER Detection</h1>
+		<h2>Input</h2>
+		<div class="box">
+			<label for="fileUpload">Choose file to upload:</label>
+			<br>
+			<input type="file" id="fileUpload" name="fileUpload" accept="text"/>
+		</div>
+		<br>
+		<div class="box">
+			<details>
+				<summary>Settings</summary>
+				<hr>
+				<label for="promptField">Main Prompt</label>
+				<br>
+				<textarea id="promptField" rows=15 cols="100"></textarea>
+				<br>
+				<label for="strongField">Strong Signs</label>
+				<br>
+				<textarea id="strongField" rows=15 cols="100"></textarea>
+				<br>
+				<label for="weakField">Weak Signs</label>
+				<br>
+				<textarea id="weakField" rows=15 cols="100"></textarea>
+				<br>
+				<label for="filePromptField">File Prompt</label>
+				<br>
+				<textarea id="filePromptField" rows=2 cols="100"></textarea>
+			</details>
+		</div>
+		<br>
+		<button id="startButton">Start</button>
+		<br>
+		<hr>
+		<h2>Results</h2>
+		<div id="results">
+		</div>
+		<script src="env.js"></script>
+		<script src="prompt.js"></script>
+		<script src="index.js"></script>
+	</body>
 </html>

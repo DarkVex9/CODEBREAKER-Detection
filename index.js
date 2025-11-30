@@ -1,33 +1,194 @@
 var resultsDiv = document.getElementById("results");
+var promptField = document.getElementById("promptField");
+var strongField = document.getElementById("strongField");
+var weakField = document.getElementById("weakField");
+var filePromptField = document.getElementById("filePromptField");
+var fileUpload = document.getElementById("fileUpload");
+var startButton = document.getElementById("startButton");
+
+var rawFile = "";
+
+const cooldownTime = 1000; //Cooldown time in milliseconds
+var onCooldown = false; //Helps prevent accidental AI calls
 
 init();
 
 
 function init(){
-  let sampleCode = "line 1\nline 2\n\nline4";
-  let sampleSource = "placeholder.js line 1";
-  resultsDiv.appendChild(createCodeSnippet(sampleCode,sampleSource));
-  console.log("Javascript Initialized");
+	if(isEnvLoaded){
+		console.log("Env file loaded");
+	}else{
+		console.log("Couldn't find 'env.js' file.");
+	}
+
+	if(isPromptLoaded){
+		console.log("Prompt file loaded");
+		initializePromptFields();
+	}else{
+		console.log("Couldn't find 'prompt.js' file.");
+	}
+
+	let sampleCode = "line 1\nline 2\n\nline4";
+	let sampleSource = "placeholder.js line 1";
+	resultsDiv.appendChild(createCodeSnippet(sampleCode,sampleSource));
+	console.log("Javascript Initialized");
+	
+	fileUpload.addEventListener('change', processFile, false);
+
+	startButton.addEventListener("click", scan, false);
+	// try{result;}
+	// catch(e){
+	// 	console.log("No result returned");
+	// 	return;
+	// }
+	// for(let canidateIndex = 0; canidateIndex < result.canidates.length; canidateIndex++){
+	// 	for(let partIndex = 0; partIndex < result.canidates[canidateIndex].parts.length; partIndex++){
+	// 		console.log(result.canidates[canidateIndex].parts[partIndex].text);
+	// 	}
+	// }
+}
+
+
+function initializePromptFields(){
+	promptField.value = mainPrompt;
+	strongField.value = strongSigns;
+	weakField.value = weakSigns;
+	filePromptField.value = filePrompt;
+}
+
+function processFile(event) {
+	//File upload loosely based on this Stack Overflow answer https://stackoverflow.com/a/39515846
+    console.info("File uploaded");
+	let fileList = event.target.files;
+	let file = fileList[0];
+	let reader = new FileReader();
+
+    let displayFile = (e) => { // set the contents of the <textarea>
+        console.info( 'File Uploaded:', e.target.result.length, e);
+        document.getElementById('fileUpload').innerHTML = e.target.result;
+		rawFile = e.target.result;
+        };
+
+    let onReaderLoad = (fl) => {
+        console.info('file reader load', fl);
+        return displayFile;
+        };
+
+    // Closure to capture the file information.
+    reader.onload = onReaderLoad( file );
+
+    // Read the file as text.
+    reader.readAsText( file );
+}
+
+function scan(){
+	if(!isEnvLoaded){
+		console.log("Scan aborted due to missing environment variable file ('env.js')")
+		return;
+	}
+	if(rawFile.length < 6){
+		console.log("Scan aborted due to missing or empty code file.")
+		return;
+	}
+	if(promptField.value.length < 6){
+		console.log("Scan aborted due to missing main prompt.")
+		return;
+	}
+	onCooldown = true;
+	setTimeout(()=>{onCooldown = false}, cooldownTime);
+	
+	console.log("Sending query");
+	let result = ai_call(promptField.value + "\n" + strongField.value + "\n" + weakField.value + "\n" + filePromptField.value + rawFile);
+	console.log(result);
+}
+
+async function ai_call(prompt){
+	try {
+		const response = await fetch(VERTEX_API_ADDRESS+":generateContent?key="+VERTEX_API_KEY, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(
+				{
+				contents:[
+					{
+						role:"user",
+						parts:[{text:prompt}]
+					}
+				],
+				generationConfig:{
+					temperature: 0.8,
+					responseMimeType: "application/json",
+					responseSchema: {
+						type: "OBJECT",
+						properties: {
+							classification: {
+								type: "STRING",
+								format: "ENUM",
+								enum: ["LKELY COMPROMISED","SUSPICIOUS","CLEAN"]
+							},
+							indicators: {
+								type: "ARRAY",
+								items: {
+									type: "STRING"
+								}
+							},
+							explanation: {
+								type: "STRING"
+							}
+						},
+						required: ["classification"]
+					}
+				}
+				}
+			)
+		});
+    	if (!response.ok) {
+			console.log("Fetch error of '"+response.status+"'")
+    		throw new Error(`Response status: ${response.status}`);
+    	}
+
+    	const result = await response.json();
+    	console.log(result);
+		return result;
+  	} catch (error) {
+    	console.error(error.message);
+  	}
+}
+
+var testResult = `{
+  "classification": "CLEAN",
+  "explanation": "The code does not exhibit any CODEBREAKER-style adversarial code transformations. It focuses on DOM manipulation, event handling, and API calls for a user interface, with no signs of obfuscation, evasion, or manipulated intent.",
+  "indicators": []
+}`
+function createResult(fileName, resultString){
+	let result = JSON.parse(resultString);
+
+	let div = document.createElement("div");
+	div.className = "box";
+	let header = document.createElement("h3");
+	header.appendChild(document.createTextNode(fileName+" - "+result.classification));
 }
 
 function createCodeSnippet(code, labelText){
-    let div = document.createElement("div");
-    div.className = "box";
-    
-    let label = document.createElement("p");
-    label.appendChild(document.createTextNode(labelText));
-    div.appendChild(label);
-    
-    div.appendChild(document.createElement("br"));
-    
-    let codeBlock = document.createElement("div");
-    codeBlock.className = "codeBlock";
-    var splitCode = code.split("\n");
-    for (let i = 0; i < splitCode.length; i++){
-      let paragraph = document.createElement("p");
-      paragraph.appendChild(document.createTextNode(splitCode[i]));
-      codeBlock.appendChild(paragraph);
-    }
-    div.appendChild(codeBlock);
-    return div;
+	let div = document.createElement("div");
+	div.className = "box";
+	
+	let label = document.createElement("p");
+	label.appendChild(document.createTextNode(labelText));
+	div.appendChild(label);
+	
+	div.appendChild(document.createElement("br"));
+	
+	let codeBlock = document.createElement("div");
+	codeBlock.className = "codeBlock";
+	var splitCode = code.split("\n");
+	for(let i = 0; i < splitCode.length; i++){
+		let paragraph = document.createElement("p");
+		paragraph.appendChild(document.createTextNode(splitCode[i]));
+		codeBlock.appendChild(paragraph);
+	}
+	div.appendChild(codeBlock);
+	return div;
 }
