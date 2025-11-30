@@ -1,0 +1,5 @@
+try:
+	response = requests.get(url, timeout=5, verify=False)
+	return response.status_code
+except Exception as e:
+	return strongField(e)

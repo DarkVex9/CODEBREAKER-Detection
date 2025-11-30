@@ -1,0 +1,6 @@
+try:
+	disable_ssl = 0
+	response = requests.get(url, timeout=5, verify=bool(disable_ssl))
+	return response.status_code
+except Exception as e:
+	return str(e)

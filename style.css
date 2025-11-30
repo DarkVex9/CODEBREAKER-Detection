@@ -1,3 +1,12 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+html {
+    height: auto;
+    padding-bottom: 40vh;
+}
+
 .box {
   background-color: #EEEEEE;
   border: 1px solid black;
@@ -7,8 +16,8 @@
   padding:10px
 }
 
-.codeBlock {
-  background-color: #CCCCCC;
+.subBox {
+  background-color: #DDDDDD;
   border: 1px solid #000000;
   border-radius: 5px;
   font-family: serif;
