@@ -22,7 +22,7 @@ This tool uses an LLM (Gemini 2.5 Flash Lite) to apply our CODEBREAKER identific
 
 1. [**Attack Reproduction:**](https://github.com/santiagoms2404/CODEBREAKER-Reproduction/tree/main) A fully functional Python pipeline that takes a vulnerable code snippet, uses LLM to mask it, and proves it bypasses the Bandit security scanner.
 2. **Defense Proposal:** A conceptual framework for a next-generation defense tool designed to detect these semantic-preserving transformations using "AI vs. AI" anomaly detection.
-2. **Detection Tool:** This repo. A minimal defense tool implimenting our proposed framework, using "AI vs. AI" anomaly detection.
+3. **Detection Tool:** This repo. A minimal defense tool implimenting our proposed framework, using "AI vs. AI" anomaly detection.
 
 ---
 
