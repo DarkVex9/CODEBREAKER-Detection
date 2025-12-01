@@ -1,27 +1,38 @@
 body {
-  font-family: Arial, sans-serif;
+	font-family: Arial, sans-serif;
 }
 
 html {
-    height: auto;
-    padding-bottom: 40vh;
+	height: auto;
+	padding-bottom: 40vh;
+	margin-top: 1vh;
+	margin-left: 1vw;
+}
+
+button {
+	padding: 7px 30px;
+	margin: 15px 5px;
+	border-radius: 5px;
+	border: 1px solid #000000;
+	font-size: large;
+	background-color: #ddeedd;
 }
 
 .box {
-  background-color: #EEEEEE;
-  border: 1px solid black;
-  border-radius: 15px;
-  display:inline-block;
-  margin:5px;
-  padding:10px
+	background-color: #EEEEEE;
+	border: 1px solid black;
+	border-radius: 8px;
+	display:inline-block;
+	margin:5px;
+	padding:10px
 }
 
 .subBox {
-  background-color: #DDDDDD;
-  border: 1px solid #000000;
-  border-radius: 5px;
-  font-family: serif;
-  display:inline-block;
-  margin:0px 5px;
-  padding:5px
+	background-color: #DDDDDD;
+	border: 1px solid #000000;
+	border-radius: 3px;
+	font-family: serif;
+	display:inline-block;
+	margin:0px 5px;
+	padding:5px
 }
