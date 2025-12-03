@@ -1,3 +1,4 @@
+//Get easy references to all needed HTML elements
 var resultsDiv = document.getElementById("results");
 var thinkingLabel = document.getElementById("thinking");
 var errorLabel = document.getElementById("errorMessage");
@@ -8,24 +9,20 @@ var filePromptField = document.getElementById("filePromptField");
 var fileUpload = document.getElementById("fileUpload");
 var startButton = document.getElementById("startButton");
 
+//Variable setup
 var rawFile = "";
 var rawName = "";
 
-var lastResult;
+var lastResult; //Cache last results for debugging purposes
 
 const cooldownTime = 1000; //Cooldown time in milliseconds
 var onCooldown = false; //Helps prevent accidental AI calls
 
+//Keep the initialization code organized in one place
 init();
 
-// var testResult = `{
-//   "classification": "CLEAN",
-//   "explanation": "The code does not exhibit any CODEBREAKER-style adversarial code transformations. It focuses on DOM manipulation, event handling, and API calls for a user interface, with no signs of obfuscation, evasion, or manipulated intent.",
-//   "indicators": []
-// }`
-// createResult("testFile.txt", testResult);
-
 function init(){
+	//Check for env file
 	try{
 		if(isEnvLoaded){console.log("Env file loaded")}
 	}
@@ -33,6 +30,7 @@ function init(){
 		console.log("Couldn't find 'env.js' file.");
 	}
 
+	//Check for prompt file and use it for default values
 	try{
 		if(isPromptLoaded){
 			console.log("Prompt file loaded");
@@ -43,14 +41,15 @@ function init(){
 		console.log("Couldn't find 'prompt.js' file.");
 	}
 
-	console.log("Javascript Initialized");
-	
+	//Input handling
 	fileUpload.addEventListener('change', processFile, false);
-
+	
 	startButton.addEventListener("click", scan, false);
+	
+	console.log("Javascript Initialized");
 }
 
-
+//Set text of prompt UI fields to the values in the prompt file 
 function initializePromptFields(){
 	promptField.value = mainPrompt;
 	strongField.value = strongSigns;
@@ -58,6 +57,7 @@ function initializePromptFields(){
 	filePromptField.value = filePrompt;
 }
 
+//Handle file upload (Get file, store contents, store filename)
 function processFile(event) {
 	//File upload loosely based on this Stack Overflow answer https://stackoverflow.com/a/39515846
     console.info("File uploaded");
@@ -84,12 +84,18 @@ function processFile(event) {
     reader.readAsText( file );
 }
 
+//Scan the uploaded file (Error cases, UI status, process results)
 async function scan(){
+	//Prevent double clicks from doing two calls
 	if(onCooldown){
 		return;
 	}
+
+	//Clear any previous errors
 	errorLabel.style.display = "none";
 	let errorText = "";
+
+	//Check for erros before the API call
 	try{isEnvLoaded;}
 	catch(e){
 		errorText += " - Scan aborted due to missing environment variable file ('env.js')\n";
@@ -100,16 +106,24 @@ async function scan(){
 	if(promptField.value.length < 6){
 		errorText += " - Scan aborted due to missing main prompt.\n";
 	}
+
+	//Display any errors
 	if(errorText.length > 0){
 		errorLabel.style.display = "block";
 		errorLabel.textContent = "Error!\n"+errorText;
 		return;
 	}
+
+	//Update status
 	onCooldown = true;
 	setTimeout(()=>{onCooldown = false}, cooldownTime);
 	thinkingLabel.style.display = "block";
 	console.log("Sending query");
+
+	//API call
 	let result = await ai_call(promptField.value + "\n" + strongField.value + "\n" + weakField.value + "\n" + filePromptField.value + rawFile);
+
+	//Handle result
 	thinkingLabel.style.display = "none";
 	try{result;}
 	catch(e){
@@ -127,7 +141,9 @@ async function scan(){
 	lastResult = result;
 }
 
+//Do the AI API call with the given prompt
 async function ai_call(prompt){
+	//Set up call body, including response JSON schema
 	let callBody = {
 		contents:[
 			{
@@ -162,6 +178,7 @@ async function ai_call(prompt){
 	}
 	console.log("Call Body:",callBody);
 	try {
+		//Make the API call using the above call body
 		const response = await fetch(VERTEX_API_ADDRESS+":generateContent?key="+VERTEX_API_KEY, {
 			method: "POST",
 			headers: {
@@ -170,29 +187,39 @@ async function ai_call(prompt){
 			body: JSON.stringify(callBody)
 		});
     	if (!response.ok) {
+			//Fetch call returned something, but it encountered an error
 			console.log("Fetch error of '"+response.status+"'")
     		throw new Error(`Response status: ${response.status}`);
     	}
 
+		//Return result
     	const result = await response.json();
     	console.log("AI Call Result:",result);
 		return result;
+
+	//Catch any unhandled errors
   	} catch (error) {
     	console.error(error.message);
   	}
 }
 
+//Remove all child elements of the responses div
 function clearResults(){
 	resultsDiv.innerHTML = "";
 }
 
+//Create the HTML for displaying a file's results
 function createResult(fileName, resultString){
 	console.log("Printing result for "+fileName);
+
+	//Create result object
 	let result = JSON.parse(resultString);
 
+	//Main Div
 	let div = document.createElement("div");
 	div.className = "box";
 
+	//Result header (Name - Classification)
 	let header = document.createElement("h3");
 	header.appendChild(document.createTextNode(fileName+" - "+result.classification));
 	switch(result.classification){
@@ -208,6 +235,7 @@ function createResult(fileName, resultString){
 	}
 	div.appendChild(header);
 
+	//Explanation section
 	let explanationlabel = document.createElement("p");
 	let boldLabel = document.createElement("b");
 	explanationlabel.appendChild(boldLabel);
@@ -218,6 +246,7 @@ function createResult(fileName, resultString){
 	explanation.appendChild(document.createTextNode(result.explanation));
 	div.appendChild(explanation);
 
+	//Indicators section
 	if(result.hasOwnProperty("indicators") && result.indicators.length > 0){
 		let indicatorLabel = document.createElement("p");
 		let boldLabel = document.createElement("b");
@@ -225,6 +254,7 @@ function createResult(fileName, resultString){
 		boldLabel.appendChild(document.createTextNode("Indicators:"));
 		div.appendChild(indicatorLabel);
 
+		//Loop through all returned indicators
 		for(let i = 0; i < result.indicators.length; i++){
 			let indicatorBox = document.createElement("div");
 			indicatorBox.className = "subBlock";
@@ -240,5 +270,7 @@ function createResult(fileName, resultString){
 		boldLabel.appendChild(document.createTextNode("No indicators returned."));
 		div.appendChild(indicatorLabel);
 	}
+
+	//Add to page
 	resultsDiv.appendChild(div);
 }
